@@ -1,12 +1,25 @@
 <?php
-$server = stream_socket_server("tcp://0.0.0.0:39710", $errno, $errstr);
+$port = 39710;
+if ($argc == 1) {
+    echo "use default port, 39710" . "\n";
+} else {
+    $port = intval($argv[1]);
+    if ($port == 0) {
+        $port = 39710;
+        echo "use default port, 39710" . "\n";
+    } else {
+        echo "use port: " . $port . "\n";
+    }
+}
+
+$server = stream_socket_server("tcp://0.0.0.0:" . $port, $errno, $errstr);
 
 if ($server === false) {
     throw new Exception("Could not create server: $errstr ($errno)");
 }
 
 for (;;) {
-    $client = stream_socket_accept($server);
+    $client = stream_socket_accept($server, -1);
     if ($client === false) {
         echo "Could not accept client\n";
         continue;
