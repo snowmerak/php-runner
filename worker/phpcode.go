@@ -50,7 +50,11 @@ for (;;) {
             switch ($php_mode) {
                 case true:
                     if ($word == "?>") {
-                        eval($php_code);
+                        try {
+                            eval($php_code);
+                        } catch (ParseError $e) {
+                            echo $e->getMessage() . "\n";
+                        }
                         $php_code = "";
                         $php_mode = false;
                     } else {
