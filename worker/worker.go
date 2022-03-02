@@ -35,15 +35,17 @@ func NewWorkerMap() *WorkerMap {
 	}
 }
 
-func (w *WorkerMap) Add(worker string, url string) {
+func (w *WorkerMap) Add(url string) {
 	w.lock.Lock()
-	w.workers[worker] = false
+	w.workers[url] = false
+	w.count++
 	w.lock.Unlock()
 }
 
 func (w *WorkerMap) Delete(worker string) {
 	w.lock.Lock()
 	delete(w.workers, worker)
+	w.count--
 	w.lock.Unlock()
 }
 
@@ -73,6 +75,12 @@ func (w *WorkerMap) Run(reader io.Reader) <-chan Result {
 			}
 		}
 		w.lock.Unlock()
+		defer func() {
+			w.lock.Lock()
+			w.workers[url] = false
+			w.count++
+			w.lock.Unlock()
+		}()
 
 		client, err := net.Dial("tcp", url)
 		if err != nil {
